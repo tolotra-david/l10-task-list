@@ -86,4 +86,9 @@ class TaskTest extends TestCase
         $this->assertStringContainsString($task->description, $content);
     }
 
+    public function test_it_can_show_create_template()
+    {
+        $this->assertStringContainsString('<input type="text" name="title" id="title">', View::make('create')->render());
+    }
+
 }
