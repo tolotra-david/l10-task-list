@@ -10,35 +10,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TaskTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use WithFaker, RefreshDatabase;
 
-    public function test_it_can_create_task(): void
+    public function test_it_can_create_1000_tasks(): void
     {
-        $faker = $this->faker();
+        Task::factory(1000)->create();
 
-        $task = Task::create([
-            "title" => $faker->name,
-            "description" => $faker->sentence(2),
-            "long_description" => $faker->sentence(5),
-            "completed" => true
-        ]);
-
-        $this->assertDatabaseHas(
-            "tasks",
-            [
-                "title" => $task->title,
-                "description" => $task->description,
-                "long_description" => $task->long_description,
-                "completed" => true
-            ]
-        );
-    }
-
-    public function test_it_can_create_10_tasks(): void
-    {
-        Task::factory(10)->create();
-
-        $this->assertEquals(10, Task::all()->count());
+        $this->assertEquals(1000, Task::all()->count());
     }
 
     public function test_it_can_show_all_tasks(): void
@@ -71,7 +49,7 @@ class TaskTest extends TestCase
         }
     }
 
-    public function test_it_can_show_one_single_task(): void
+    public function test_it_can_show_one_task(): void
     {
         $task = Task::factory()->create([
             'title' => 'Laravel',
@@ -86,9 +64,41 @@ class TaskTest extends TestCase
         $this->assertStringContainsString($task->description, $content);
     }
 
-    public function test_it_can_show_create_template()
+    public function test_it_can_show_create_task_template(): void
     {
         $this->assertStringContainsString('<input type="text" name="title" id="title">', View::make('create')->render());
+    }
+
+    public function test_it_should_redirect_after_create_task(): void
+    {
+        $task = new Task;
+        $task->title = 'Test';
+        $task->description = 'Test test';
+        $task->long_description = 'Long description';
+
+        $response = $this->post('/tasks', $task->getAttributes());
+
+        $this->assertDatabaseHas('tasks', $task->getAttributes());
+
+        $newModel = Task::latest()->first();
+
+        $response->assertRedirect(route('tasks.show', ['id' => $newModel->id]));
+    }
+
+    public function test_it_should_redirect_on_the_same_page_if_errors(): void
+    {
+        $task = new Task;
+        $task->description = 'Test test';
+        $task->long_description = 'Long description';
+
+        $response = $this->post('/tasks', $task->getAttributes());
+
+        $this->assertDatabaseMissing('tasks', $task->getAttributes());
+
+        $response->assertRedirect();
+
+        $response->assertSessionHasErrors('title');
+
     }
 
 }

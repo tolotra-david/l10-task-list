@@ -4,6 +4,9 @@
 
 @section('content')
     <form method="POST" action="{{ route('tasks.store') }}">
+        @if (isset($errors))
+            {{ $errors }}
+        @endif
         @csrf
         <div>
             <label for="title">Title</label>
