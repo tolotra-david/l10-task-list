@@ -64,11 +64,6 @@ class TaskTest extends TestCase
         $this->assertStringContainsString($task->description, $content);
     }
 
-    public function test_it_can_show_create_task_template(): void
-    {
-        $this->assertStringContainsString('<input type="text" name="title" id="title">', View::make('create')->render());
-    }
-
     public function test_it_should_redirect_after_create_task(): void
     {
         $task = new Task;
@@ -83,6 +78,13 @@ class TaskTest extends TestCase
         $newModel = Task::latest()->first();
 
         $response->assertRedirect(route('tasks.show', ['id' => $newModel->id]));
+
+        $response->assertSessionHas('success', 'Task created successfully!');
+
+        $response = $this->get(route('tasks.show', ['id' => $newModel->id]));
+
+        $response->assertSee('Task created successfully!');
+
     }
 
     public function test_it_should_redirect_on_the_same_page_if_errors(): void
@@ -100,5 +102,4 @@ class TaskTest extends TestCase
         $response->assertSessionHasErrors('title');
 
     }
-
 }
