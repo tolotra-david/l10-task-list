@@ -66,22 +66,23 @@ class TaskTest extends TestCase
 
     public function test_it_should_redirect_after_create_task(): void
     {
-        $task = new Task;
-        $task->title = $this->faker->name;
-        $task->description = $this->faker->paragraph(2);
-        $task->long_description = $this->faker->paragraph(7);
+        $task = [
+            'title' => $this->faker->name(2),
+            'description' => $this->faker->sentence(2),
+            'long_description' => $this->faker->sentence(7),
+        ];
 
-        $response = $this->post(route('tasks.store'), $task->getAttributes());
+        $response = $this->post(route('tasks.store', $task));
 
-        $this->assertDatabaseHas('tasks', $task->getAttributes());
-
-        $newModel = Task::latest()->first();
-
-        $response->assertRedirect(route('tasks.show', ['id' => $newModel->id]));
+        $this->assertDatabaseHas('tasks', $task);
 
         $response->assertSessionHas('success', 'Task created successfully!');
 
-        $response = $this->get(route('tasks.show', ['id' => $newModel->id]));
+        $task = Task::latest()->first();
+
+        $response->assertRedirect(route('tasks.show', ['id' => $task->id]));
+
+        $response = $this->get(route('tasks.show', ['id' => $task->id]));
 
         $response->assertSee('Task created successfully!');
     }
@@ -130,5 +131,8 @@ class TaskTest extends TestCase
 
         $response->assertSessionHasErrors('title');
 
+        $this->assertStringContainsString('Test test', View::make('create')->render());
+
+        $this->assertStringContainsString('Long description', View::make('create')->render());
     }
 }
