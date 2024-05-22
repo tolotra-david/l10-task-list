@@ -67,11 +67,11 @@ class TaskTest extends TestCase
     public function test_it_should_redirect_after_create_task(): void
     {
         $task = new Task;
-        $task->title = 'Test';
-        $task->description = 'Test test';
-        $task->long_description = 'Long description';
+        $task->title = $this->faker->name;
+        $task->description = $this->faker->paragraph(2);
+        $task->long_description = $this->faker->paragraph(7);
 
-        $response = $this->post('/tasks', $task->getAttributes());
+        $response = $this->post(route('tasks.store'), $task->getAttributes());
 
         $this->assertDatabaseHas('tasks', $task->getAttributes());
 
@@ -84,7 +84,36 @@ class TaskTest extends TestCase
         $response = $this->get(route('tasks.show', ['id' => $newModel->id]));
 
         $response->assertSee('Task created successfully!');
+    }
 
+    public function test_it_can_update_task(): void
+    {
+        $task = Task::factory()->create();
+
+        $updatedTitle = $this->faker->name;
+        $updatedDescription = $this->faker->paragraph(2);
+        $updatedLongDescription = $this->faker->paragraph(7);
+
+        $reponse = $this->put(
+            route('tasks.update', ['id' => $task->id]),
+            [
+                'title' => $updatedTitle,
+                'description' => $updatedDescription,
+                'long_description' => $updatedLongDescription,
+            ]
+        );
+
+        $reponse->assertRedirect(route('tasks.show', ['id' => $task->id]));
+
+        $reponse = $this->get(route('tasks.show', ['id' => $task->id]));
+
+        $reponse->assertSee('Task updated successfully!');
+
+        $task = $task->fresh();
+
+        $this->assertEquals($updatedTitle, $task->title);
+        $this->assertEquals($updatedDescription, $task->description);
+        $this->assertEquals($updatedLongDescription, $task->long_description);
     }
 
     public function test_it_should_redirect_on_the_same_page_if_errors(): void
