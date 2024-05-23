@@ -80,9 +80,9 @@ class TaskTest extends TestCase
 
         $task = Task::latest()->first();
 
-        $response->assertRedirect(route('tasks.show', ['id' => $task->id]));
+        $response->assertRedirect(route('tasks.show', ['task' => $task]));
 
-        $response = $this->get(route('tasks.show', ['id' => $task->id]));
+        $response = $this->get(route('tasks.show', ['task' => $task]));
 
         $response->assertSee('Task created successfully!');
     }
@@ -96,7 +96,7 @@ class TaskTest extends TestCase
         $updatedLongDescription = $this->faker->paragraph(7);
 
         $reponse = $this->put(
-            route('tasks.update', ['id' => $task->id]),
+            route('tasks.update', ['task' => $task]),
             [
                 'title' => $updatedTitle,
                 'description' => $updatedDescription,
@@ -104,9 +104,9 @@ class TaskTest extends TestCase
             ]
         );
 
-        $reponse->assertRedirect(route('tasks.show', ['id' => $task->id]));
+        $reponse->assertRedirect(route('tasks.show', ['task' => $task]));
 
-        $reponse = $this->get(route('tasks.show', ['id' => $task->id]));
+        $reponse = $this->get(route('tasks.show', ['task' => $task]));
 
         $reponse->assertSee('Task updated successfully!');
 
