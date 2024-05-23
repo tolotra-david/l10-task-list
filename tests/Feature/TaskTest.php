@@ -135,4 +135,17 @@ class TaskTest extends TestCase
 
         $this->assertStringContainsString('Long description', View::make('create')->render());
     }
+
+    public function test_it_should_redirect_after_delete_task(): void
+    {
+        $task = Task::factory()->create();
+
+        $response = $this->delete(route('tasks.destroy', ['task' => $task]));
+
+        $this->assertDatabaseMissing('tasks', $task->getAttributes());
+
+        $response->assertRedirect(route('tasks.index'));
+
+        $response->assertSessionHas('success', 'Task deleted successfully!');
+    }
 }
