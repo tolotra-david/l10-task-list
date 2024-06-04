@@ -21,31 +21,43 @@ class TaskTest extends TestCase
 
     public function test_it_can_show_all_tasks(): void
     {
-        $tasks = Task::factory(10)->create([
-            "title" => $this->faker->name(2),
-        ]);
+        $tasks = Task::factory()->count(3)->create();
 
-        $view = View::make('index', ['tasks' => $tasks]);
-
-        $content = $view->render();
+        $response = $this->get(route('tasks.index'));
 
         foreach ($tasks as $task) {
-            $this->assertStringContainsString($task->title, $content);
+            $response->assertSee($task->title);
         }
+    }
+
+    public function test_it_can_show_message_when_empty(): void
+    {
+        $response = $this->get(route('tasks.index'));
+
+        $response->assertSee('There are no tasks!');
+    }
+
+    public function test_task_list_pagination(): void
+    {
+        Task::factory()->count(25)->create();
+
+        $response = $this->get(route('tasks.index'));
+
+        $response->assertSee('Pagination');
+
+        $response->assertSee('1');
+
+        $response->assertSee('2');
     }
 
     public function test_it_can_show_all_tasks_completed(): void
     {
-        $tasks = Task::factory(10)->create([
-            "title" => $this->faker->name(2),
-        ]);
+        $tasks = Task::factory()->count(10)->create();
 
-        $view = View::make('index', ['tasks' => $tasks->where('completed', true)]);
-
-        $content = $view->render();
+        $response = $this->get(route('tasks.index'));
 
         foreach ($tasks as $task) {
-            $this->assertStringContainsString($task->title, $content);
+            $response->assertSee($task->title);
         }
     }
 
