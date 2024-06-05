@@ -160,4 +160,25 @@ class TaskTest extends TestCase
 
         $response->assertSessionHas('success', 'Task deleted successfully!');
     }
+
+    public function test_it_can_toggle_task(): void
+    {
+        $task = Task::factory()->create([
+            'completed' => false
+        ]);
+
+        $originalTask = $task->getAttributes();
+
+        $response = $this->put(route('tasks.toggle-completed', $task));
+
+        $response->assertRedirect();
+
+        $task->refresh();
+
+        $this->assertNotEquals($originalTask, $task->getAttributes());
+
+        $response->assertSessionHas('success');
+
+        $this->assertEquals('Task updated successfully', session('success'));
+    }
 }
